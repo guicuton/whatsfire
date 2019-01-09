@@ -1,10 +1,10 @@
-Whatsfire - bulk service through whatsapp web 
+Whatsfire - bulk service through whatsapp web<br>
 Python code to automate whatsapp web use.
 
 ## Quickstart
 
-- Requires python2.6+, or python3.0 +
-- Required ChromeDriver
+  - Requires python2.6+, or python3.0 +
+  - Required ChromeDriver
 
 ## Using
 
