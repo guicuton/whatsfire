@@ -1,3 +1,7 @@
+###################
+# @owner SMSFIRE ##
+# #################
+
 from datetime import datetime
 from time import sleep
 from time import time
@@ -10,10 +14,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 import socket
 import urllib.request
 
-datenow = datetime.now()
-message_text='Ola mensagem teste em massa - '+str(time()) # message
+message_text='Your message' # message
 no_of_message=1 # no. of time
-moblie_no_list = ["5511945658451","5511969157483"] # list of phone number
+moblie_no_list = ["5511944556677","5511966991155"] # list of phone number with international prefix
 
 def element_presence(by,xpath,time):
     element_present = EC.presence_of_element_located((By.XPATH, xpath))
@@ -26,39 +29,43 @@ def is_connected():
     except :
         is_connected()
 
-### SAVE QRCODE ###
+### SAVE QRCODE - START ###
+### Create folder qrcodes in the same path
 def get_qrcode():
     img = driver.find_element_by_xpath('//div[@class="_2EZ_m"]/img')
     src = img.get_attribute('src')
     urllib.request.urlretrieve(src, "./qrcodes/"+str(time())+".png")
-    print("Faca a leitura do QRCODE")
-    sleep(5)
-
+    print("Scan QRCODE")
+    sleep(5) #whatsapp update his qrcode every 20 seconds
+    
+    # CHECK If QRCode still valid, if not update it
     try:
         element_presence(By.XPATH,'//span[@data-icon="refresh-l-light"]',2)
         refresh = driver.find_element_by_xpath('//span[@data-icon="refresh-l-light"]')
         refresh.click()
     except:
         pass        
-
+    # CHECK If whatsapp web were pared
     try:
         element_presence(By.CLASS_NAME,'_2Uo0Z',5)
         print("Whatsapp pared with server")
     except:
         get_qrcode()
-### SAVE QRCODE ###
+### SAVE QRCODE - END ###
 
-### CALL WHATSAPP API ###
+### CALL WHATSAPP API - start ###
 def send_whatsapp_msg(phone_no,text):
-    driver.get("https://web.whatsapp.com/send?phone={}&source=&data=#".format(phone_no))
+    driver.get("https://web.whatsapp.com/send?phone={}&source=&data=#".format(phone_no)) #Call official whatsapp api
+    #Each request the server popup alert - this make automatic click on this
     try:
         alert = browser.switch_to.alert
         alert.dismiss()
     except Exception as e:
         pass
     finally:
-        print("Mensagem processada a "+str(phone_no)+" as "+str(time()))
-### CALL WHATSAPP API ###
+        print("Message sent "+str(phone_no)+" as "+str(time()))
+### CALL WHATSAPP API - end ###
+    #Search for text box and send button
     try:
         element_presence(By.XPATH,'//*[@id="main"]/footer/div[1]/div[2]/div/div[2]',30)
         txt_box = driver.find_element(By.CLASS_NAME, '_2S1VP')
@@ -75,10 +82,12 @@ def send_whatsapp_msg(phone_no,text):
         alert.accept()
 
 ######################### STAR SERVER ##############################
+#Infinit loop throug numbers
+#This is perfect for dinamyc lists but should be coded
 while True:
 
     if not moblie_no_list:
-        print('nenhum numero')
+        print('Without number to sent')
         sleep(5)
 
     else:
@@ -88,13 +97,13 @@ while True:
         driver.get("http://web.whatsapp.com")
         sleep(5) #wait time to scan the code in second
 
-        # read qrcode - start
+        # Re-check if sync were active - start
         try:
             element_presence(By.XPATH,'//div[@class="_2EZ_m"]/img',15)
             get_qrcode()
         except Exception as e:
             pass
-        # read qrcode - end
+        # Re-check if sync were active - start
 
         for moblie_no in moblie_no_list:
             try:
@@ -103,14 +112,15 @@ while True:
                 sleep(5)
                 is_connected()
             finally:
-                print("Mensagem enviada a "+str(moblie_no)+" as "+str(time()))
+                print("Message sent to "+str(moblie_no)+" at "+str(time()))
                 sleep(1)
+                #Check if we have the ack of read or not
                 try:
                     element_presence(By.XPATH,'//span[@data-icon="msg-dblcheck-ack"]',3)
-                    print("Entregue com confirmação leitura a "+str(moblie_no)+" as "+str(time()))
+                    print("Delivered with ack of read to "+str(moblie_no)+" at "+str(time()))
                 except Exception as e:
-                    print("Entregue sem confirmação leitura a "+str(moblie_no)+" as "+str(time()))
+                    print("Delivered without ack of read to "+str(moblie_no)+" at "+str(time()))
                     sleep(1)
 
-
+    #close window and restart the process using the same session_id
     driver.close()
