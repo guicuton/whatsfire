@@ -1,4 +1,4 @@
-Whatsfire - bulk service through whatsapp web<br>
+# Whatsfire - bulk service through whatsapp web<br>
 Python code to automate whatsapp web use.
 
 ## Quickstart
